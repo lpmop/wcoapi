@@ -1,0 +1,24 @@
+# Composer
+/vendor/
+composer.lock
+
+# IDE / OS
+/.idea/
+/.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Env i sekrety (nigdy w repo)
+.env
+.env.local
+.env.*.local
+*.local.json
+!*.local.json.example
+
+# Runtime
+/var/
+*.log
+.phpunit.result.cache
+.php-cs-fixer.cache
