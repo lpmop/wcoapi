@@ -10,6 +10,7 @@ use WcoApi\Command\AdministratorsCreateCommand;
 use WcoApi\Command\BlocksCommand;
 use WcoApi\Command\BlocksSettingsCommand;
 use WcoApi\Command\CallsCommand;
+use WcoApi\Command\DownloadCommand;
 use WcoApi\Command\FunctionalitiesCommand;
 use WcoApi\Command\GetCommand;
 use WcoApi\Command\MainNumberCommand;
@@ -85,6 +86,7 @@ $tracker = new LedgerDownloadTracker(new DownloadLedger($storage->location()));
 $app = new Application('wco-api', '0.1.0');
 foreach ([
     new CallsCommand($config, $profiles, $storage, $tracker),
+    new DownloadCommand($config, $profiles, $storage, $tracker),
     new UsersCommand($config, $profiles),
     new WhoamiCommand($config, $profiles),
     new MainNumberCommand($config, $profiles),
