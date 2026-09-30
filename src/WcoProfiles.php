@@ -6,18 +6,6 @@ namespace WcoApi;
 
 use WcoApi\Exception\AuthenticationException;
 
-/**
- * Lokalne profile kont WCO (wielo-użytkownik).
- *
- * Plik JSON (gitignored), np. config/wco-profiles.local.json:
- * {
- *   "default": "main",
- *   "profiles": {
- *     "main": { "vpbx": "48…", "user": "…", "pass": "…", "rec_pass": "…" },
- *     "archiwista": { "vpbx": "48…", "user": "…", "pass": "…", "rec_pass": "…" }
- *   }
- * }
- */
 final class WcoProfiles
 {
     public function __construct(
@@ -31,9 +19,6 @@ final class WcoProfiles
         return $this->filePath;
     }
 
-    /**
-     * @return array{default: string|null, profiles: array<string, array{vpbx: string, user: string, pass: string, rec_pass: string, label?: string}>}
-     */
     public function load(): array
     {
         if (!is_file($this->filePath)) {
@@ -75,9 +60,6 @@ final class WcoProfiles
         return ['default' => $default, 'profiles' => $profiles];
     }
 
-    /**
-     * @param array{default?: string|null, profiles: array<string, array<string, string>>} $data
-     */
     public function save(array $data): void
     {
         $dir = dirname($this->filePath);
@@ -96,7 +78,6 @@ final class WcoProfiles
         }
     }
 
-    /** @return list<string> */
     public function names(): array
     {
         return array_keys($this->load()['profiles']);
@@ -126,9 +107,6 @@ final class WcoProfiles
         $this->save($data);
     }
 
-    /**
-     * @param array{vpbx: string, user: string, pass: string, rec_pass?: string, label?: string} $profile
-     */
     public function upsert(string $name, array $profile, bool $makeDefault = false): void
     {
         $name = trim($name);
@@ -164,9 +142,6 @@ final class WcoProfiles
         $this->save($data);
     }
 
-    /**
-     * Buduje WcoConfig dla wskazanego profilu (lub default / fallback na env).
-     */
     public function resolve(?string $profileName, WcoConfig $baseFromEnv): WcoConfig
     {
         $data = $this->load();
@@ -176,7 +151,6 @@ final class WcoProfiles
         }
 
         if ($name === null || $name === '') {
-            // Brak pliku profili — zachowanie jak dotychczas (env).
             return $baseFromEnv;
         }
 

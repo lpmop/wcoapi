@@ -46,7 +46,6 @@ final class DownloadCommand extends AbstractWcoCommand
         $io = new SymfonyStyle($input, $output);
         [$client] = $this->loginClient($io);
 
-        /** @var list<string> $names */
         $names = array_values(array_filter(
             array_map('strval', $input->getArgument('names') ?? []),
             static fn (string $v): bool => $v !== ''

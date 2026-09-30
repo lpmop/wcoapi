@@ -48,12 +48,10 @@ final class RecordingsDeleteCommand extends AbstractWcoCommand
             $io->warning('API zgłasza delete-recordings-allowed=false — próbuję usunięcia mimo to (jak w GUI).');
         }
 
-        /** @var list<string> $idArgs */
         $idArgs = array_values(array_filter(
             array_map('strval', $input->getArgument('ids') ?? []),
             static fn (string $v): bool => $v !== ''
         ));
-        /** @var list<string> $names */
         $names = array_values(array_filter(
             array_map('strval', $input->getOption('name') ?? []),
             static fn (string $v): bool => $v !== ''
@@ -98,10 +96,6 @@ final class RecordingsDeleteCommand extends AbstractWcoCommand
         return Command::SUCCESS;
     }
 
-    /**
-     * @param list<string> $names
-     * @return list<int>|null
-     */
     private function resolveNamesToIds(
         WcoClient $client,
         array $names,
@@ -126,7 +120,6 @@ final class RecordingsDeleteCommand extends AbstractWcoCommand
                 'vrType' => (string) $input->getOption('vr-type'),
             ]);
 
-            /** @var list<array<string, mixed>> $content */
             $content = array_values($page['content'] ?? []);
             if ($content === []) {
                 break;

@@ -15,10 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractWcoCommand extends Command
 {
-    /** Aktywna konfiguracja (profil lub env) — ustawiana w initialize(). */
     protected WcoConfig $config;
-
-    /** Nazwa użytego profilu albo null (= sam env). */
     protected ?string $activeProfileName = null;
 
     public function __construct(
@@ -31,7 +28,7 @@ abstract class AbstractWcoCommand extends Command
             'account',
             'p',
             InputOption::VALUE_REQUIRED,
-            'Lokalny profil konta (wco-profiles.local.json; nie mylić z Symfony --profile)'
+            'Lokalny profil konta'
         );
     }
 
@@ -51,9 +48,6 @@ abstract class AbstractWcoCommand extends Command
         return new WcoClient($this->config->baseUrl, 60, $this->config->verifySsl);
     }
 
-    /**
-     * @return array{0: WcoClient, 1: array<string, mixed>}
-     */
     protected function loginClient(SymfonyStyle $io): array
     {
         $client = $this->createClient();

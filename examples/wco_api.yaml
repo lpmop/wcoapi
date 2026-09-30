@@ -1,5 +1,3 @@
-# Opcjonalna konfiguracja WcoApiBundle (domyślnie bierze WCO_* z env).
-# Skopiuj do: config/packages/wco_api.yaml
 wco_api:
     base_url: '%env(WCO_BASE_URL)%'
     vpbx: '%env(WCO_VPBX)%'
@@ -7,9 +5,6 @@ wco_api:
     password: '%env(WCO_PASS)%'
     recording_password: '%env(WCO_REC_PASS)%'
     ssl_verify: '%env(WCO_SSL_VERIFY)%'
-    profile: '%env(WCO_PROFILE)%'
-    profiles_file: '%env(WCO_PROFILES_FILE)%'
     storage:
         driver: '%env(WCO_STORAGE_DRIVER)%'
         path: '%env(WCO_STORAGE_PATH)%'
-    db_track_downloads: '%env(bool:WCO_DB_TRACK_DOWNLOADS)%'

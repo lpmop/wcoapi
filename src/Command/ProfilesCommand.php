@@ -76,8 +76,7 @@ final class ProfilesCommand extends Command
         }
 
         $io->table(['def', 'name', 'label', 'vpbx', 'user'], $rows);
-        $io->writeln(sprintf('<comment>Plik:</comment> %s', $this->profiles->filePath()));
-        $io->writeln('<comment>Przełączanie:</comment> php bin/console wco:whoami -p NAZWA   |   wco:profiles:use NAZWA');
+        $io->writeln($this->profiles->filePath());
 
         return Command::SUCCESS;
     }

@@ -3,17 +3,9 @@
   "profiles": {
     "main": {
       "vpbx": "48XXXXXXXXX",
-      "user": "MAIN_LOGIN",
+      "user": "LOGIN",
       "pass": "HASLO",
-      "rec_pass": "HASLO_NAGRAN",
-      "label": "główny admin"
-    },
-    "drugi": {
-      "vpbx": "48XXXXXXXXX",
-      "user": "INNY_LOGIN",
-      "pass": "HASLO",
-      "rec_pass": "HASLO_NAGRAN",
-      "label": "dodatkowy admin z panela"
+      "rec_pass": "HASLO_NAGRAN"
     }
   }
 }

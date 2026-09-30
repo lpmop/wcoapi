@@ -8,11 +8,6 @@ use WcoApi\Exception\AuthenticationException;
 use WcoApi\Exception\WcoException;
 use ZipArchive;
 
-/**
- * Klient nieoficjalnego API WCO (Orange) — prefiks /admin_api.
- *
- * @see docs/API.md
- */
 final class WcoClient
 {
     private const DEFAULT_BASE = 'https://wco.orange.pl/admin_api';
@@ -33,11 +28,6 @@ final class WcoClient
         $this->verifySsl = $verifySsl;
     }
 
-    /**
-     * Logowanie jak w GUI: CSRF → perform_login.
-     *
-     * @return array<string, mixed> zdekodowane dane sesji z body perform_login
-     */
     public function login(string $vpbxNumber, string $username, string $password, ?string $language = null): array
     {
         $this->request('GET', '/login');
@@ -64,32 +54,6 @@ final class WcoClient
         return $this->decodeLoginBody($response['body']);
     }
 
-    /** Odświeża JWT w cookie Authorization. */
-    public function refreshJwt(): void
-    {
-        $this->request('POST', '/jwt-refresh', [
-            'json' => new \stdClass(),
-            'csrf' => true,
-        ]);
-    }
-
-    /**
-     * Lista nagrań (paginowana).
-     *
-     * @param array{
-     *     dateFrom?: string,
-     *     dateTo?: string,
-     *     page?: int,
-     *     size?: int,
-     *     sort?: string,
-     *     vrType?: string,
-     *     archivedBy?: string|null,
-     *     aPartyNumber?: string|null,
-     *     bPartyNumber?: string|null,
-     *     name?: string|null
-     * } $params
-     * @return array<string, mixed>
-     */
     public function listRecordings(array $params = []): array
     {
         $tz = new \DateTimeZone('Europe/Warsaw');
@@ -122,10 +86,6 @@ final class WcoClient
         return $data;
     }
 
-    /**
-     * Odblokowuje odsłuch nagrań hasłem szyfrowania.
-     * W GUI często to to samo hasło co do logowania — zależy od konfiguracji VPBX.
-     */
     public function unlockRecordingsWithPassword(string $password): bool
     {
         $response = $this->request('POST', '/encryption/by-key-pwd', [
@@ -133,24 +93,16 @@ final class WcoClient
             'csrf' => true,
         ]);
 
-        $decoded = json_decode($response['body'], true);
-
-        return $decoded === true;
+        return json_decode($response['body'], true) === true;
     }
 
     public function isAuthenticationByKey(): bool
     {
         $response = $this->request('GET', '/encryption/is-authentication-by-key');
-        $decoded = json_decode($response['body'], true);
 
-        return $decoded === true;
+        return json_decode($response['body'], true) === true;
     }
 
-    /**
-     * Pobiera ZIP z odszyfrowanymi nagraniami (.mp3 w środku).
-     *
-     * @param list<string> $recordingNames wartości pola `name` z listy nagrań
-     */
     public function downloadRecordingsZip(array $recordingNames, bool $encrypted = false): string
     {
         if ($recordingNames === []) {
@@ -171,11 +123,6 @@ final class WcoClient
         return $response['body'];
     }
 
-    /**
-     * Pobiera odszyfrowane MP3 (endpoint decrypted-unzipped) — bez warstwy ZIP.
-     *
-     * @param list<string> $recordingNames
-     */
     public function downloadDecryptedUnzipped(array $recordingNames): string
     {
         if ($recordingNames === []) {
@@ -195,12 +142,6 @@ final class WcoClient
         return $response['body'];
     }
 
-    /**
-     * Pobiera nagranie i zapisuje lokalnie odszyfrowane .mp3.
-     *
-     * @param list<string> $recordingNames
-     * @return list<string> ścieżki zapisanych plików
-     */
     public function downloadAndExtractMp3(array $recordingNames, string $targetDirectory, bool $encrypted = false): array
     {
         if (!is_dir($targetDirectory) && !mkdir($targetDirectory, 0775, true) && !is_dir($targetDirectory)) {
@@ -217,12 +158,10 @@ final class WcoClient
             return [$zipPath];
         }
 
-        // 1) Preferuj bezpośrednie odszyfrowane MP3 (jak GUI „Pobierz”)
         if (count($recordingNames) === 1) {
             try {
                 $binary = $this->downloadDecryptedUnzipped($recordingNames);
                 $out = $targetDirectory . DIRECTORY_SEPARATOR . $recordingNames[0] . '.mp3';
-                // jeśli serwer nadal zwrócił ZIP — rozpakuj
                 if (str_starts_with($binary, 'PK')) {
                     return $this->extractZipToDirectory($binary, $targetDirectory);
                 }
@@ -232,18 +171,15 @@ final class WcoClient
 
                 return [$out];
             } catch (WcoException) {
-                // fallback poniżej
             }
         }
 
-        $zipBinary = $this->downloadRecordingsZip($recordingNames, false);
-
-        return $this->extractZipToDirectory($zipBinary, $targetDirectory);
+        return $this->extractZipToDirectory(
+            $this->downloadRecordingsZip($recordingNames, false),
+            $targetDirectory,
+        );
     }
 
-    /**
-     * @return list<string>
-     */
     private function extractZipToDirectory(string $zipBinary, string $targetDirectory): array
     {
         $zipPath = $targetDirectory . DIRECTORY_SEPARATOR . 'wco-recordings-' . bin2hex(random_bytes(4)) . '.zip';
@@ -262,8 +198,7 @@ final class WcoClient
             if ($name === false || str_ends_with($name, '/')) {
                 continue;
             }
-            $base = basename($name);
-            $out = $targetDirectory . DIRECTORY_SEPARATOR . $base;
+            $out = $targetDirectory . DIRECTORY_SEPARATOR . basename($name);
             $stream = $zip->getStream($name);
             if ($stream === false) {
                 continue;
@@ -282,7 +217,6 @@ final class WcoClient
         return $saved;
     }
 
-    /** @return list<array<string, mixed>> */
     public function getUsers(): array
     {
         $data = $this->jsonGet('/users/');
@@ -290,11 +224,6 @@ final class WcoClient
         return array_is_list($data) ? $data : [];
     }
 
-    /**
-     * Lista administratorów VPBX.
-     *
-     * @return list<array<string, mixed>>
-     */
     public function getAdministrators(bool $withCertificates = true): array
     {
         $data = $this->jsonGet('/administrators/', [
@@ -304,11 +233,6 @@ final class WcoClient
         return array_is_list($data) ? $data : [];
     }
 
-    /**
-     * Role możliwe do przypisania dodatkowym administratorom.
-     *
-     * @return list<array<string, mixed>>
-     */
     public function getAdministratorConfigurableRoles(): array
     {
         $data = $this->jsonGet('/administrators/configurableRoles/');
@@ -319,20 +243,10 @@ final class WcoClient
     public function hasExternalRecordingKeys(): bool
     {
         $response = $this->request('GET', '/administrators/hasExternalRecordingKeys');
-        $decoded = json_decode($response['body'], true);
 
-        return $decoded === true;
+        return json_decode($response['body'], true) === true;
     }
 
-    /**
-     * Tworzy dodatkowego administratora. Odpowiedź to pełna lista administratorów (jak w GUI).
-     *
-     * Wymagane pola (z HAR): email, login, firstName, lastName, password, roles[],
-     * recordingPassword (aktualne hasło nagrań VPBX), recordingKeysPassword, version=-1.
-     *
-     * @param array<string, mixed> $payload
-     * @return list<array<string, mixed>>
-     */
     public function createAdministrator(array $payload): array
     {
         $data = $this->postJson('/administrators/', $payload);
@@ -340,102 +254,18 @@ final class WcoClient
         return is_array($data) && array_is_list($data) ? $data : (is_array($data) ? [$data] : []);
     }
 
-    /** @return array<string, mixed> */
-    public function getMainNumber(): array
-    {
-        return $this->jsonGet('/functionalities/main-number/');
-    }
-
-    /** @return list<array<string, mixed>> */
-    public function getAdditionalNumbers(): array
-    {
-        $data = $this->jsonGet('/functionalities/additional-number/');
-
-        return array_is_list($data) ? $data : [];
-    }
-
-    /** @return array<string, mixed> */
-    public function getRecordingConfig(): array
-    {
-        return $this->jsonGet('/functionalities/recording-config');
-    }
-
-    /** @return array<string, mixed> */
     public function getApplicationVersion(): array
     {
         return $this->jsonGet('/footer/application-version');
     }
 
-    /** @return array<string, mixed> */
-    public function getWizard(): array
-    {
-        return $this->jsonGet('/wizard');
-    }
-
-    /** @return list<mixed>|array<string, mixed> */
-    public function getAdministrationInformation(): array
-    {
-        return $this->jsonGet('/administration-information');
-    }
-
-    /** @return array<string, mixed> */
-    public function getScenario(): array
-    {
-        return $this->jsonGet('/graph/scenario');
-    }
-
-    /** @return array<string, mixed> */
-    public function getStorePackages(): array
-    {
-        return $this->jsonGet('/store/packages');
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    public function listAllBlocks(bool $isLite = false): array
-    {
-        $data = $this->jsonGet('/schema/list-all-blocks', ['isLite' => $isLite ? 'true' : 'false']);
-
-        return array_is_list($data) ? $data : [];
-    }
-
-    /** @return list<array<string, mixed>> */
-    public function listAllBlocksSettings(): array
-    {
-        $data = $this->jsonGet('/schema/list-all-blocks-settings');
-
-        return array_is_list($data) ? $data : [];
-    }
-
-    /** @return list<array<string, mixed>> */
-    public function listFunctionalitiesAll(): array
-    {
-        $data = $this->jsonGet('/schema/list-functionalities-all');
-
-        return array_is_list($data) ? $data : [];
-    }
-
-    /** @return array<string, mixed> */
-    public function getRecordingFilterOptions(string $vrType = 'NWI'): array
-    {
-        return $this->jsonGet('/recordings/filter-options', ['vrType' => $vrType]);
-    }
-
     public function isDeleteRecordingsAllowed(): bool
     {
         $response = $this->request('GET', '/recordings/delete-recordings-allowed');
-        $decoded = json_decode($response['body'], true);
 
-        return $decoded === true;
+        return json_decode($response['body'], true) === true;
     }
 
-    /**
-     * Usuwa nagrania po polu `id` z listy (nie po `name`).
-     * GUI: POST /recordings/delete/ z body JSON [id, …].
-     *
-     * @param list<int|string> $recordingIds
-     */
     public function deleteRecordings(array $recordingIds): void
     {
         if ($recordingIds === []) {
@@ -456,28 +286,16 @@ final class WcoClient
         ]);
     }
 
-    /** @return array<string, mixed> */
     public function isAuthorizedToOpenMessage(): array
     {
         return $this->jsonGet('/user-session-info/isAuthorizedToOpenMessage');
     }
 
-    /**
-     * Generyczny GET zwracający JSON.
-     *
-     * @param array<string, scalar|null> $query
-     * @return array<string, mixed>|list<mixed>
-     */
     public function get(string $path, array $query = []): array
     {
         return $this->jsonGet($path, $query);
     }
 
-    /**
-     * Generyczny POST JSON.
-     *
-     * @return array<string, mixed>|list<mixed>|string
-     */
     public function postJson(string $path, mixed $json = null): array|string
     {
         $response = $this->request('POST', $path, [
@@ -485,11 +303,8 @@ final class WcoClient
             'csrf' => true,
         ]);
         $decoded = json_decode($response['body'], true);
-        if (is_array($decoded)) {
-            return $decoded;
-        }
 
-        return $response['body'];
+        return is_array($decoded) ? $decoded : $response['body'];
     }
 
     public function cookies(): CookieJar
@@ -497,15 +312,6 @@ final class WcoClient
         return $this->cookies;
     }
 
-    /**
-     * @param array{
-     *     query?: array<string, scalar|null>,
-     *     json?: mixed,
-     *     csrf?: bool,
-     *     raw?: bool
-     * } $options
-     * @return array{status: int, body: string, headers: array<string, list<string>>}
-     */
     public function request(string $method, string $path, array $options = []): array
     {
         $url = $this->baseUrl . '/' . ltrim($path, '/');
@@ -594,9 +400,6 @@ final class WcoClient
         ];
     }
 
-    /**
-     * GUI wysyła archivedBy jako int: 0=NOT_ARCHIVED, 1=BY_SFTP, 2=BY_WEBSERVICE, 3=BY_WWW.
-     */
     private function normalizeArchivedBy(string|int $value): int
     {
         if (is_int($value) || ctype_digit((string) $value)) {
@@ -612,10 +415,6 @@ final class WcoClient
         };
     }
 
-    /**
-     * @param array<string, scalar|null> $query
-     * @return array<string, mixed>|list<mixed>
-     */
     private function jsonGet(string $path, array $query = []): array
     {
         $response = $this->request('GET', $path, $query === [] ? [] : ['query' => $query]);
@@ -627,7 +426,6 @@ final class WcoClient
         return $data;
     }
 
-    /** @return array<string, mixed> */
     private function decodeLoginBody(string $body): array
     {
         $body = trim($body);
@@ -642,17 +440,10 @@ final class WcoClient
         }
 
         $data = json_decode($json, true);
-        if (!is_array($data)) {
-            return ['_raw' => $body];
-        }
 
-        return $data;
+        return is_array($data) ? $data : ['_raw' => $body];
     }
 
-    /**
-     * @param list<string> $lines
-     * @return array<string, list<string>>
-     */
     private function parseHeaderLines(array $lines): array
     {
         $out = [];

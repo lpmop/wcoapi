@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace WcoApi\Storage;
 
-/**
- * Nie zapisuje plików (np. tylko meta w DB) — write rzuca wyjątek jeśli użyte.
- */
 final class NullRecordingStorage implements RecordingStorageInterface
 {
     public function write(string $recordingName, string $binary, string $extension = 'mp3'): string

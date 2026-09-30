@@ -34,20 +34,18 @@ final class WcoApiExtension extends Extension implements PrependExtensionInterfa
 
     public function prepend(ContainerBuilder $container): void
     {
-        // Domyślne env() żeby %env(...)% w Configuration nie wywaliło kontenera
         $container->setParameter('env(WCO_BASE_URL)', 'https://wco.orange.pl/admin_api');
         $container->setParameter('env(WCO_VPBX)', '');
         $container->setParameter('env(WCO_USER)', '');
         $container->setParameter('env(WCO_PASS)', '');
         $container->setParameter('env(WCO_REC_PASS)', '');
-        $container->setParameter('env(WCO_SSL_VERIFY)', '0');
+        $container->setParameter('env(WCO_SSL_VERIFY)', '1');
         $container->setParameter('env(WCO_PROFILE)', '');
         $container->setParameter('env(WCO_PROFILES_FILE)', '');
         $container->setParameter('env(WCO_STORAGE_DRIVER)', 'local');
         $container->setParameter('env(WCO_STORAGE_PATH)', 'var/recordings');
         $container->setParameter('env(WCO_DB_TRACK_DOWNLOADS)', '1');
 
-        // Doctrine ORM 3: mapping przez prepend (bez addEntityNamespace z compiler passa)
         if ($container->hasExtension('doctrine')) {
             $container->prependExtensionConfig('doctrine', [
                 'orm' => [

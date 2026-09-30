@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace WcoApi;
 
-/**
- * Lokalny rejestr pobranych nagrań (API WCO nie ma „pobrane przez użytkownika X”).
- */
 final class DownloadLedger
 {
     public function __construct(
@@ -20,7 +17,6 @@ final class DownloadLedger
         return rtrim($this->directory, '/\\') . DIRECTORY_SEPARATOR . $this->filename;
     }
 
-    /** @return list<string> */
     public function names(): array
     {
         $file = $this->path();

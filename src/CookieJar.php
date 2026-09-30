@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace WcoApi;
 
-/**
- * Prosty jar cookies (nazwa → wartość) z parsowaniem Set-Cookie.
- */
 final class CookieJar
 {
-    /** @var array<string, string> */
     private array $cookies = [];
 
     public function set(string $name, string $value): void
@@ -22,9 +18,6 @@ final class CookieJar
         return $this->cookies[$name] ?? null;
     }
 
-    /**
-     * @param list<string> $setCookieHeaders
-     */
     public function absorbSetCookieHeaders(array $setCookieHeaders): void
     {
         foreach ($setCookieHeaders as $header) {
@@ -51,7 +44,6 @@ final class CookieJar
         return implode('; ', $parts);
     }
 
-    /** @return array<string, string> */
     public function all(): array
     {
         return $this->cookies;

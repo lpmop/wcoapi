@@ -54,7 +54,6 @@ final class WcoStorageFactory
 
         if ($this->dbTrack) {
             if ($this->downloadRepository === null || $this->em === null) {
-                // Brak EM/repo (np. przed wco:db-install) — działaj na ledgerze lokalnym
                 if ($trackers === []) {
                     return new NullDownloadTracker();
                 }

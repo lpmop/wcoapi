@@ -6,9 +6,6 @@ namespace WcoApi;
 
 use WcoApi\Exception\AuthenticationException;
 
-/**
- * Konfiguracja klienta z env / DI.
- */
 final class WcoConfig
 {
     public readonly string $recordingPassword;
@@ -30,9 +27,6 @@ final class WcoConfig
         $this->verifySsl = $verifySsl;
     }
 
-    /**
-     * @param array<string, string|null> $env
-     */
     public static function fromEnv(array $env): self
     {
         $get = static fn (string $key, string $default = ''): string => trim((string) ($env[$key] ?? $default));

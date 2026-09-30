@@ -3,28 +3,17 @@
 
 declare(strict_types=1);
 
-use WcoApi\Command\AdditionalNumbersCommand;
-use WcoApi\Command\AdminInfoCommand;
 use WcoApi\Command\AdministratorsCommand;
 use WcoApi\Command\AdministratorsCreateCommand;
-use WcoApi\Command\BlocksCommand;
-use WcoApi\Command\BlocksSettingsCommand;
 use WcoApi\Command\CallsCommand;
 use WcoApi\Command\DownloadCommand;
-use WcoApi\Command\FunctionalitiesCommand;
 use WcoApi\Command\GetCommand;
-use WcoApi\Command\MainNumberCommand;
-use WcoApi\Command\PackagesCommand;
 use WcoApi\Command\ProfilesAddCommand;
 use WcoApi\Command\ProfilesCommand;
 use WcoApi\Command\ProfilesRemoveCommand;
 use WcoApi\Command\ProfilesUseCommand;
-use WcoApi\Command\RecordingConfigCommand;
-use WcoApi\Command\RecordingFiltersCommand;
-use WcoApi\Command\ScenarioCommand;
 use WcoApi\Command\UsersCommand;
 use WcoApi\Command\WhoamiCommand;
-use WcoApi\Command\WizardCommand;
 use WcoApi\DownloadLedger;
 use WcoApi\Persistence\LedgerDownloadTracker;
 use WcoApi\Storage\LocalDirectoryStorage;
@@ -34,11 +23,8 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
 $autoloadCandidates = [
-    // vendor/wco/wco-api/bin → vendor/autoload.php
     dirname(__DIR__, 3) . '/autoload.php',
-    // path-install: <project>/wcoapi/bin → <project>/vendor/autoload.php
     dirname(__DIR__, 2) . '/vendor/autoload.php',
-    // standalone clone z własnym vendor/
     dirname(__DIR__) . '/vendor/autoload.php',
 ];
 
@@ -58,7 +44,6 @@ if (!$loaded) {
     exit(1);
 }
 
-// katalog projektu = rodzic vendor/ (albo katalog paczki przy path bez vendor w rodzicu)
 $vendorDir = dirname($autoloadFile);
 $appDir = str_ends_with(str_replace('\\', '/', $vendorDir), '/vendor')
     ? dirname($vendorDir)
@@ -87,19 +72,8 @@ $app = new Application('wco-api', '0.1.0');
 foreach ([
     new CallsCommand($config, $profiles, $storage, $tracker),
     new DownloadCommand($config, $profiles, $storage, $tracker),
-    new UsersCommand($config, $profiles),
     new WhoamiCommand($config, $profiles),
-    new MainNumberCommand($config, $profiles),
-    new AdditionalNumbersCommand($config, $profiles),
-    new ScenarioCommand($config, $profiles),
-    new PackagesCommand($config, $profiles),
-    new BlocksCommand($config, $profiles),
-    new BlocksSettingsCommand($config, $profiles),
-    new FunctionalitiesCommand($config, $profiles),
-    new RecordingConfigCommand($config, $profiles),
-    new RecordingFiltersCommand($config, $profiles),
-    new WizardCommand($config, $profiles),
-    new AdminInfoCommand($config, $profiles),
+    new UsersCommand($config, $profiles),
     new AdministratorsCommand($config, $profiles),
     new AdministratorsCreateCommand($config, $profiles),
     new GetCommand($config, $profiles),

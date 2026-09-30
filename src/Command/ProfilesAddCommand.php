@@ -99,7 +99,6 @@ final class ProfilesAddCommand extends Command
         }
 
         $io->success(sprintf('Zapisano profil "%s" → %s', $name, $this->profiles->filePath()));
-        $io->writeln(sprintf('Użycie: <info>php bin/console wco:whoami -p %s</info>', $name));
 
         return Command::SUCCESS;
     }

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace WcoApi\Persistence;
 
-/** OR wielu trackerów — has() jeśli którykolwiek ma; mark() na wszystkie. */
 final class ChainDownloadTracker implements DownloadTrackerInterface
 {
-    /** @param list<DownloadTrackerInterface> $trackers */
     public function __construct(
         private readonly array $trackers,
     ) {

@@ -92,7 +92,6 @@ final class CallsCommand extends AbstractWcoCommand
             'archivedBy' => is_string($archivedBy) && $archivedBy !== '' ? $archivedBy : null,
         ]);
 
-        /** @var list<array<string, mixed>> $items */
         $items = array_values($page['content'] ?? []);
         $items = $this->applyLocalFilters($items, $input, $storage);
 
@@ -143,14 +142,7 @@ final class CallsCommand extends AbstractWcoCommand
             $rows
         );
 
-        $io->writeln(sprintf(
-            '<comment>Zakres:</comment> %s → %s | <comment>storage:</comment> %s',
-            $dateFrom,
-            $dateTo,
-            $storage->location()
-        ));
-        $io->writeln('Pobrane = tracker (DB/ledger) lub plik w storage. API nie ma per-user download.');
-        $io->writeln('Usuwanie: <info>php bin/console wco:recordings:delete ID</info> (kolumna Id).');
+        $io->writeln(sprintf('%s → %s | %s', $dateFrom, $dateTo, $storage->location()));
 
         $namesToDownload = [];
         if ($input->getOption('download-all')) {
@@ -205,7 +197,6 @@ final class CallsCommand extends AbstractWcoCommand
             $files = $client->downloadAndExtractMp3([$name], $targetDir, $encrypted);
             foreach ($files as $file) {
                 $bytes = is_file($file) ? (int) filesize($file) : 0;
-                // gdy storage nie jest tym samym katalogiem co temp — skopiuj
                 if ($storage instanceof LocalDirectoryStorage && dirname($file) !== $storage->location()) {
                     $binary = (string) file_get_contents($file);
                     $ext = pathinfo($file, PATHINFO_EXTENSION) ?: ($encrypted ? 'zip' : 'mp3');
@@ -232,10 +223,6 @@ final class CallsCommand extends AbstractWcoCommand
         return is_string($last) && $last !== '' ? $last : '-';
     }
 
-    /**
-     * @param list<array<string, mixed>> $items
-     * @return list<array<string, mixed>>
-     */
     private function applyLocalFilters(array $items, InputInterface $input, RecordingStorageInterface $storage): array
     {
         $caller = $input->getOption('caller');
@@ -269,9 +256,6 @@ final class CallsCommand extends AbstractWcoCommand
         }));
     }
 
-    /**
-     * @param list<array<string, mixed>> $items
-     */
     private function resolveDownloadName(string $download, array $items): ?string
     {
         if (ctype_digit($download)) {

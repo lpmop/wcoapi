@@ -6,7 +6,6 @@ namespace WcoApi\Persistence;
 
 use WcoApi\DownloadLedger;
 
-/** Tracker oparty o lokalny JSON + obecność pliku MP3. */
 final class LedgerDownloadTracker implements DownloadTrackerInterface
 {
     public function __construct(
