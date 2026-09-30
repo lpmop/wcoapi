@@ -7,7 +7,7 @@ W `composer.json` hosta:
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/lpmop/wcoapo.git"
+      "url": "https://github.com/lpmop/wcoapi.git"
     }
   ],
   "require": {
